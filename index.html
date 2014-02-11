@@ -1,0 +1,78 @@
+<html ng-app>
+<head>
+  <title>Company name generator</title>
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+</head>
+<body ng-controller="MainCtrl">
+
+<div class="container">
+  <h1 class="page-header">Name generator</h1>
+  <div class="row">
+    <div class="col-sm-6"><label>Begins with:</label><input class="form-control" type="text" ng-model="beginswith"></div>
+    <div class="col-sm-6"><label>Ends with:</label><input class="form-control" type="text" ng-model="endswith"></div>
+  </div>
+
+  <hr>
+
+  <label>Characters</label>
+  <div ng-repeat="characterList in characterLists track by $index" class="row">
+    <div class="col-sm-10"><input class="form-control" type="text" ng-model="characterLists[$index]"></div>
+    <div class="col-sm-2 text-right">
+      <div class="btn-group">
+        <button class="btn btn-default btn-sm" ng-click="characterLists[$index] = 'abcdefghijklmnopqrstuvwxyz'">abc</button>
+        <button class="btn btn-default btn-sm" ng-click="characterLists[$index] = 'aeiou'">Vowels</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-danger btn-sm" ng-click="characterLists.splice($index,1)">-</button>
+        <button class="btn btn-success btn-sm" ng-click="characterLists.push('aeiou')">+</button>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <table class="table table-condensed">
+    <tr><th>Name</th></tr>
+    <tr ng-repeat="permutation in permutations(characterLists) track by $index">
+      <td><a ng-href="http://{{beginswith}}{{permutation}}{{endswith}}.com" target="_blank">{{beginswith}}<strong>{{permutation}}</strong>{{endswith}}</a></td>
+      <td class="text-right"><button href class="btn btn-default btn-xs" ng-click="characterLists[0] = characterLists[0].replace(permutation[0],'')" >Remove {{permutation[0]}}</button></td>
+    </tr>
+  </table>
+</div>
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.12/angular.min.js"></script>
+<script>
+  function MainCtrl($scope, $location){
+    $scope.beginswith = $location.path() ? $location.path().slice(1) : 'Company';
+    $scope.characterLists = $location.hash() ? $location.hash().split(',') : ['aeiou', 'aeiou'];
+
+    $scope.$watch('beginswith', function(beginswith) {
+      $location.path(beginswith);
+    });
+
+    $scope.$watch('characterLists', function(lists) {
+      $location.hash(lists.join(','));
+    }, true)
+
+    $scope.permutations = function(lists) {
+      var result = [];
+      if (lists.length > 0) {
+        var lastArray = $scope.permutations(lists.slice(1));
+        if (lastArray.length === 0) {
+          result = lists[0].split('');
+        } else {
+          lists[0].split('').forEach(function(character){
+            lastArray.forEach(function(lastArrayChar) {
+            result.push(character + lastArrayChar)
+            });
+          });
+        }
+      }
+      return result;
+    };
+  }
+</script>
+</body>
+</html>
